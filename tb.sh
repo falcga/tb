@@ -1,0 +1,114 @@
+#!/usr/bin/env bash
+# Terminal Browser using Jina Reader API
+# MIT License
+
+set -euo pipefail
+
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m'
+
+# Dependency check
+if ! command -v curl &> /dev/null; then
+    echo -e "${RED}Error: curl not found. Please install curl.${NC}" >&2
+    exit 1
+fi
+
+# Default values
+TOKEN="${JINA_TOKEN:-}"
+CONTEXT_TOKEN="${JINA_CONTEXT_TOKEN:-}"
+URL_OR_QUERY=""
+RAW_MODE=false
+
+# URL encode function (without external tools)
+urlencode() {
+    local string="$1"
+    local encoded=""
+    local length="${#string}"
+    local i c
+    for (( i=0; i<length; i++ )); do
+        c="${string:i:1}"
+        case "$c" in
+            [a-zA-Z0-9._~-]) encoded+="$c" ;;
+            ' ') encoded+='%20' ;;
+            *) printf -v hex '%02X' "'$c"; encoded+="%$hex" ;;
+        esac
+    done
+    printf "%s" "$encoded"
+}
+
+# Parse arguments
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --token)
+            TOKEN="$2"
+            shift 2
+            ;;
+        --context)
+            CONTEXT_TOKEN="$2"
+            shift 2
+            ;;
+        --raw)
+            RAW_MODE=true
+            shift
+            ;;
+        --help|-h)
+            cat << EOF
+Usage: tb [--token TOKEN] [--context TOKEN] [--raw] <URL or search query>
+
+Options:
+  --token TOKEN       Jina API token (can also be set via JINA_TOKEN)
+  --context TOKEN     Context token (X-Context header)
+  --raw               Output without pager (less)
+  --help, -h          Show this help
+
+Examples:
+  tb --token jina_xxx https://example.com
+  tb "search phrase"
+  tb --context myctx https://news.ycombinator.com
+
+Environment variables:
+  JINA_TOKEN          Required API token
+  JINA_CONTEXT_TOKEN  Optional context token
+EOF
+            exit 0
+            ;;
+        -*)
+            echo -e "${RED}Unknown flag: $1${NC}" >&2
+            exit 1
+            ;;
+        *)
+            URL_OR_QUERY="$1"
+            shift
+            ;;
+    esac
+done
+
+if [[ -z "$URL_OR_QUERY" ]]; then
+    echo -e "${RED}Error: No URL or search query provided.${NC}" >&2
+    exit 1
+fi
+
+if [[ -z "$TOKEN" ]]; then
+    echo -e "${RED}Error: No token provided. Use --token or set JINA_TOKEN.${NC}" >&2
+    exit 1
+fi
+
+if [[ "$URL_OR_QUERY" =~ ^https?:// ]]; then
+    TARGET_URL="https://r.jina.ai/${URL_OR_QUERY}"
+else
+    ENCODED_QUERY="$(urlencode "$URL_OR_QUERY")"
+    TARGET_URL="https://s.jina.ai/${ENCODED_QUERY}"
+fi
+
+HEADERS=(-H "Authorization: Bearer $TOKEN" -H "X-Engine: browser")
+[[ -n "$CONTEXT_TOKEN" ]] && HEADERS+=(-H "X-Context: $CONTEXT_TOKEN")
+
+echo -e "${GREEN}→ Fetching:${NC} $TARGET_URL" >&2
+
+if [[ "$RAW_MODE" == true ]] || [[ ! -t 1 ]]; then
+    curl -sS "${HEADERS[@]}" "$TARGET_URL"
+else
+    curl -sS "${HEADERS[@]}" "$TARGET_URL" | less -R
+fi
