@@ -15,7 +15,6 @@ mkdir -p "$INSTALL_DIR"
 
 cat > "$TARGET" << 'EOF'
 #!/usr/bin/env bash
-
 set -euo pipefail
 
 RED='\033[0;31m'
@@ -30,11 +29,18 @@ URL=""
 RAW=false
 
 urlencode() {
-    local s="$1" i c
-    for ((i=0;i<${#s};i++)); do
-        c="${s:i:1}"
-        [[ "$c" =~ [a-zA-Z0-9._~-] ]] && printf "$c" || printf "%%%02X" "'$c"
+    local string="$1"
+    local encoded=""
+    local i c
+    for ((i=0; i<${#string}; i++)); do
+        c="${string:i:1}"
+        case "$c" in
+            [a-zA-Z0-9._~-]) encoded+="$c" ;;
+            ' ') encoded+="%20" ;;
+            *) printf -v hex "%02X" "'$c"; encoded+="%$hex" ;;
+        esac
     done
+    printf "%s" "$encoded"
 }
 
 while [[ $# -gt 0 ]]; do
@@ -48,13 +54,12 @@ Usage: tb [--token TOKEN] [--context TOKEN] [--raw] <URL or query>
 Options:
   --token TOKEN       Jina API token (optional, also via JINA_TOKEN)
   --context TOKEN     Context token (X-Context header)
-  --raw               Output without pager (useful for piping)
+  --raw               Output without pager
   --help, -h          Show this help
 
 Examples:
   tb https://example.com
   tb "bash tutorial"
-  tb --token jina_xxx --context myctx https://news.ycombinator.com
 HELP
             ;;
         -*|--*) echo "Unknown option: $1" >&2; exit 1 ;;
@@ -93,7 +98,6 @@ if [[ ":$PATH:" != *":$INSTALL_DIR:"* ]]; then
     elif [[ -f "$HOME/.zshrc" ]]; then
         SHELL_CONFIG="$HOME/.zshrc"
     fi
-    
     if [[ -n "$SHELL_CONFIG" ]]; then
         echo "export PATH=\"\$HOME/.local/bin:\$PATH\"" >> "$SHELL_CONFIG"
         echo "✅ Added $INSTALL_DIR to PATH in $SHELL_CONFIG"
