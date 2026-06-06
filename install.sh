@@ -48,7 +48,7 @@ while [[ $# -gt 0 ]]; do
         --token) TOKEN="$2"; shift 2 ;;
         --context) CONTEXT="$2"; shift 2 ;;
         --raw) RAW=true; shift ;;
-        --help|-h) cat << HELP; exit 0 ;;
+        --help|-h) cat << HELP
 Usage: tb [--token TOKEN] [--context TOKEN] [--raw] <URL or query>
 
 Options:
@@ -62,6 +62,7 @@ Examples:
   tb "bash tutorial"
   tb --token jina_xxx https://news.ycombinator.com
 HELP
+            exit 0
             ;;
         -*|--*) echo "Unknown option: $1" >&2; exit 1 ;;
         *) URL="$1"; shift ;;
@@ -109,14 +110,6 @@ if [[ ":$PATH:" != *":$INSTALL_DIR:"* ]]; then
     fi
 fi
 
-echo ""
-echo "✅ Terminal Browser installed to $TARGET"
-echo ""
-echo "💡 Optional: Set JINA_TOKEN for higher rate limits:"
-echo "   export JINA_TOKEN='your_token_here'"
-echo ""
-echo "🚀 Now you can use: tb https://example.com"
-echo ""
 echo "✅ Terminal Browser installed to $TARGET"
 echo ""
 echo " ⚠️ Don't forget to set JINA_TOKEN for higher rate limits:"
