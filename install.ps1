@@ -1,5 +1,5 @@
 # Install Terminal Browser (tb.bat) for Windows
-$RepoUrl = "https://raw.githubusercontent.com/YOUR_USERNAME/terminal-browser/main/tb.bat"
+$RepoUrl = "https://raw.githubusercontent.com/falcga/tb/main/tb.bat"
 $InstallDir = "$env:USERPROFILE\bin"
 $TargetPath = "$InstallDir\tb.bat"
 
