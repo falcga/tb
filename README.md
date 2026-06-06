@@ -117,10 +117,18 @@ If `JINA_TOKEN` is not set and no `--token` is provided, the `Authorization` hea
 
 ## License
 
-MIT © 2025 [Your Name]
+MIT © 2025 falcga
 
 ## Acknowledgements
 
-Built with [Jina AI Reader](https://jina.ai/reader) – an excellent API for turning any website into LLM‑friendly text.
+This tool is an **unofficial** third‑party client for the public Jina Reader API.  
+It respects the API’s intended usage:
 
+- No web scraping or automated extraction from jina.ai
+- No reverse engineering or creation of competing services
+- API tokens are optional and passed exactly as documented (`Authorization: Bearer` header)
+- The required `X-Engine: browser` header is always sent
 
+For heavy or automated usage, please obtain your own free token from [Jina AI Reader](https://jina.ai/reader) and respect their rate limits.
+
+See [Jina AI Terms](https://jina.ai/legal/terms) and [Privacy Policy](https://jina.ai/legal/privacy) for details.
