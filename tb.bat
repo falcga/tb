@@ -1,12 +1,7 @@
 @echo off
 setlocal enabledelayedexpansion
 
-
-if "%JINA_TOKEN%"=="" (
-    echo [Error] Environment variable JINA_TOKEN is not set.
-    echo Set it with: set JINA_TOKEN=your_token
-    exit /b 1
-)
+REM Terminal Browser for Windows CMD
 
 set "TOKEN=%JINA_TOKEN%"
 set "CONTEXT=%JINA_CONTEXT_TOKEN%"
@@ -44,6 +39,7 @@ if "%URL_OR_QUERY%"=="" (
     exit /b 1
 )
 
+REM Determine mode and escape spaces for URL
 echo %URL_OR_QUERY% | findstr /i "^http:// ^https://" >nul
 if errorlevel 1 (
     set "MODE=search"
@@ -56,7 +52,8 @@ if errorlevel 1 (
 
 echo → Fetching: %TARGET_URL%
 
-set "HEADERS=-H "Authorization: Bearer %TOKEN%" -H "X-Engine: browser""
+set "HEADERS=-H "X-Engine: browser""
+if not "%TOKEN%"=="" set "HEADERS=%HEADERS% -H "Authorization: Bearer %TOKEN%""
 if not "%CONTEXT%"=="" set "HEADERS=%HEADERS% -H "X-Context: %CONTEXT%""
 
 if "%RAW_MODE%"=="1" (
@@ -75,13 +72,13 @@ exit /b 0
 :help
 echo Usage: tb.bat [--token TOKEN] [--context TOKEN] [--raw] ^<URL or query^>
 echo.
-echo   --token TOKEN       Jina API token
-echo   --context TOKEN     Context token (X-Context header)
+echo   --token TOKEN       Jina API token (optional)
+echo   --context TOKEN     Context token (X-Context header, optional)
 echo   --raw               Output without pager (more)
 echo   --help, -h          Show this help
 echo.
 echo Environment variables:
-echo   JINA_TOKEN          Required API token
+echo   JINA_TOKEN          Optional API token
 echo   JINA_CONTEXT_TOKEN  Optional context token
 echo.
 echo Example:
