@@ -60,6 +60,7 @@ Options:
 Examples:
   tb https://example.com
   tb "bash tutorial"
+  tb --token jina_xxx https://news.ycombinator.com
 HELP
             ;;
         -*|--*) echo "Unknown option: $1" >&2; exit 1 ;;
@@ -91,6 +92,7 @@ EOF
 
 chmod +x "$TARGET"
 
+# Add ~/.local/bin to PATH if not already present
 if [[ ":$PATH:" != *":$INSTALL_DIR:"* ]]; then
     SHELL_CONFIG=""
     if [[ -f "$HOME/.bashrc" ]]; then
@@ -107,6 +109,13 @@ if [[ ":$PATH:" != *":$INSTALL_DIR:"* ]]; then
     fi
 fi
 
+echo ""
+echo "✅ Terminal Browser installed to $TARGET"
+echo ""
+echo "💡 Optional: Set JINA_TOKEN for higher rate limits:"
+echo "   export JINA_TOKEN='your_token_here'"
+echo ""
+echo "🚀 Now you can use: tb https://example.com"
 echo ""
 echo "✅ Terminal Browser installed to $TARGET"
 echo ""
