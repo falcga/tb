@@ -2,29 +2,30 @@
 set -euo pipefail
 
 REPO_URL="https://raw.githubusercontent.com/falcga/tb/main"
-BIN_PATH="/usr/local/bin/tb"
-TMP_FILE="/tmp/tb.$$"
+BIN_DIR="$HOME/.local/bin"
+TARGET="$BIN_DIR/tb"
 
 echo "📦 Installing Terminal Browser (tb)..."
 
-# Check curl
 if ! command -v curl &> /dev/null; then
     echo "curl not found. Please install curl and try again."
     exit 1
 fi
 
+mkdir -p "$BIN_DIR"
+
 echo "Downloading tb..."
-curl -sSL "${REPO_URL}/tb" -o "$TMP_FILE"
+curl -sSL "${REPO_URL}/tb" -o "$TARGET"
+chmod +x "$TARGET"
 
-sudo install -m 755 "$TMP_FILE" "$BIN_PATH"
-rm -f "$TMP_FILE"
+if [[ ":$PATH:" != *":$BIN_DIR:"* ]]; then
+    echo "export PATH=\"\$HOME/.local/bin:\$PATH\"" >> ~/.bashrc
+    echo "✅ Added $BIN_DIR to PATH. Restart your terminal or run: source ~/.bashrc"
+fi
 
-echo "✅ Installed to $BIN_PATH"
+echo "✅ Installed to $TARGET"
 echo ""
-echo "⚠️  Don't forget to set the JINA_TOKEN environment variable:"
+echo "⚠️  Don't forget to set the JINA_TOKEN environment variable (optional):"
 echo "   export JINA_TOKEN='your_token_here'"
-echo ""
-echo "To make it permanent, add to ~/.bashrc or ~/.zshrc:"
-echo "   echo 'export JINA_TOKEN=\"your_token_here\"' >> ~/.bashrc"
 echo ""
 echo "Now you can use: tb https://example.com"
