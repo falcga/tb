@@ -55,7 +55,8 @@ load_saved_token
 TOKEN="${JINA_TOKEN:-${SAVED_JINA_TOKEN:-}}"
 CONTEXT_TOKEN="${JINA_CONTEXT_TOKEN:-}"
 URL_OR_QUERY=""
-RAW_MODE=false
+RAW_MODE=true
+USE_PAGER=false
 TOKEN_PROVIDED_VIA_FLAG=false
 
 # URL encode function (without external tools)
@@ -91,20 +92,28 @@ while [[ $# -gt 0 ]]; do
             RAW_MODE=true
             shift
             ;;
+        --pager)
+            USE_PAGER=true
+            RAW_MODE=false
+            shift
+            ;;
         --help|-h)
             cat << EOF
-Usage: tb [--token TOKEN] [--context TOKEN] [--raw] <URL or search query>
+Usage: tb [--token TOKEN] [--context TOKEN] [--raw|--pager] <URL or search query>
 
 Options:
   --token TOKEN       Jina API token (optional, can also be set via JINA_TOKEN)
   --context TOKEN     Context token (X-Context header, optional)
-  --raw               Output without pager (less)
+  --raw               Output raw text (default)
+  --pager             Output with pager (less)
   --help, -h          Show this help
 
 Examples:
+  tb https://example.com
   tb --token jina_xxx https://example.com
   tb "search phrase"
   tb --context myctx https://news.ycombinator.com
+  tb --pager https://example.com
 
 Environment variables:
   JINA_TOKEN          Optional API token
@@ -154,8 +163,8 @@ fi
 # Execute
 echo -e "${GREEN}→ Fetching:${NC} $TARGET_URL" >&2
 
-if [[ "$RAW_MODE" == true ]] || [[ ! -t 1 ]]; then
-    curl -sS "${HEADERS[@]}" "$TARGET_URL"
-else
+if [[ "$USE_PAGER" == true ]] && [[ -t 1 ]]; then
     curl -sS "${HEADERS[@]}" "$TARGET_URL" | less -R
+else
+    curl -sS "${HEADERS[@]}" "$TARGET_URL"
 fi

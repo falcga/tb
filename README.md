@@ -5,9 +5,9 @@ Works on **Linux**, **macOS**, **Windows** (CMD, PowerShell, WSL, Git Bash).
 
 - 🚀 Instant text‑only version of any page  
 - 🔍 Search using `s.jina.ai`  
-- 🎨 Automatic pager (`less` / `more`)  
+- 🎨 Optional pager (`less` / `more`) with `--pager` flag  
 - 🔐 Optional token authentication & context token  
-- 📦 One‑command installation  
+- 📦 One‑command installation
 
 ## Installation
 
@@ -68,20 +68,27 @@ tb "how to install python"
 |------|-------------|
 | `--token TOKEN` | Jina API token (overrides `JINA_TOKEN`) |
 | `--context TOKEN` | Context token (sent as `X-Context` header) |
-| `--raw` | Output without pager (useful for piping to files) |
+| `--raw` | Output raw text (default) |
+| `--pager` | Output with pager (less/more) |
 | `--help`, `-h` | Show help message |
 
 ### Examples
 
 ```bash
+# Open a page (raw output by default)
+tb https://example.com
+
+# Open a page with pager
+tb --pager https://example.com
+
 # Open a page with a temporary token (overrides environment)
 tb --token jina_xyz https://news.ycombinator.com
 
 # Search with a context token
 tb --context session_123 "bash best practices"
 
-# Save output to a file (no pager)
-tb --raw https://example.com > page.txt
+# Save output to a file (raw by default)
+tb https://example.com > page.txt
 
 # Anonymous usage (no token)
 tb "latest tech news"
