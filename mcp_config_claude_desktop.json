@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "tb": {
+      "command": "python",
+      "args": ["-m", "mcp_server"],
+      "cwd": "/path/to/tb",
+      "env": {
+        "JINA_API_KEY": "${JINA_API_KEY}",
+        "JINA_CONTEXT_TOKEN": "${JINA_CONTEXT_TOKEN}"
+      }
+    }
+  }
+}
