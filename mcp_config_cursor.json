@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "tb": {
+      "command": "python",
+      "args": ["-m", "mcp_server"],
+      "cwd": "${workspaceFolder}",
+      "env": {
+        "JINA_API_KEY": "${env:JINA_API_KEY}",
+        "JINA_CONTEXT_TOKEN": "${env:JINA_CONTEXT_TOKEN}"
+      }
+    }
+  }
+}

@@ -18,12 +18,21 @@ if exist "%CONFIG_FILE%" (
     )
 )
 
-set "TOKEN=%JINA_TOKEN%"
+REM Support both JINA_API_KEY (preferred) and JINA_TOKEN (legacy)
+set "TOKEN=%JINA_API_KEY%"
+if "%TOKEN%"=="" set "TOKEN=%JINA_TOKEN%"
 if "%TOKEN%"=="" if not "%SAVED_JINA_TOKEN%"=="" set "TOKEN=%SAVED_JINA_TOKEN%"
 set "CONTEXT=%JINA_CONTEXT_TOKEN%"
 set "URL_OR_QUERY="
 set "USE_PAGER=0"
 set "TOKEN_PROVIDED_VIA_FLAG=0"
+
+REM Validate that a token is provided 
+if "%TOKEN%"=="" (
+    echo [Error] JINA_API_KEY or JINA_TOKEN environment variable is required.
+    echo [Error] Get a free token from https://jina.ai/reader
+    exit /b 1
+)
 
 :parse_args
 if "%~1"=="" goto :check_query

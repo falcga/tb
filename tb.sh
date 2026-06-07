@@ -52,12 +52,20 @@ save_token() {
 load_saved_token
 
 # Default values (env vars take precedence over saved config)
-TOKEN="${JINA_TOKEN:-${SAVED_JINA_TOKEN:-}}"
+# Support both JINA_API_KEY (preferred) and JINA_TOKEN (legacy)
+TOKEN="${JINA_API_KEY:-${JINA_TOKEN:-${SAVED_JINA_TOKEN:-}}}"
 CONTEXT_TOKEN="${JINA_CONTEXT_TOKEN:-}"
 URL_OR_QUERY=""
 RAW_MODE=true
 USE_PAGER=false
 TOKEN_PROVIDED_VIA_FLAG=false
+
+# Validate that a token is provided (anonymous usage not supported)
+if [[ -z "$TOKEN" ]]; then
+    echo -e "${RED}Error: JINA_API_KEY or JINA_TOKEN environment variable is required.${NC}" >&2
+    echo -e "${RED}Get a free token from https://jina.ai/reader${NC}" >&2
+    exit 1
+fi
 
 # URL encode function (without external tools)
 urlencode() {
