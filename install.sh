@@ -14,11 +14,10 @@ fi
 mkdir -p "$INSTALL_DIR"
 
 # Copy the actual tb.sh file instead of embedding via heredoc
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-if [[ -f "$SCRIPT_DIR/tb.sh" ]]; then
-    cp "$SCRIPT_DIR/tb.sh" "$TARGET"
+if curl -sSL --fail "https://raw.githubusercontent.com/falcga/tb/main/tb.sh" -o "$TARGET"; then
+    echo "✅ tb.sh downloaded successfully"
 else
-    echo "❌ Error: tb.sh not found in $SCRIPT_DIR"
+    echo "❌ Error: Failed to download tb.sh from GitHub"
     exit 1
 fi
 
