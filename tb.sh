@@ -10,17 +10,53 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m'
 
+# Cross-platform config directory
+if [[ -n "${XDG_CONFIG_HOME:-}" ]]; then
+    CONFIG_DIR="${XDG_CONFIG_HOME}/tb"
+elif [[ -n "${APPDATA:-}" ]]; then
+    # Windows (Git Bash, WSL with Windows env)
+    CONFIG_DIR="${APPDATA}/tb"
+else
+    CONFIG_DIR="${HOME}/.config/tb"
+fi
+
+CONFIG_FILE="${CONFIG_DIR}/config"
+
 # Dependency check
 if ! command -v curl &> /dev/null; then
     echo -e "${RED}Error: curl not found. Please install curl.${NC}" >&2
     exit 1
 fi
 
-# Default values
-TOKEN="${JINA_TOKEN:-}"
+# Load saved token from config file
+load_saved_token() {
+    if [[ -f "$CONFIG_FILE" ]]; then
+        # shellcheck source=/dev/null
+        source "$CONFIG_FILE" 2>/dev/null || true
+    fi
+}
+
+# Save token to config file
+save_token() {
+    local token="$1"
+    mkdir -p "$CONFIG_DIR"
+    # Only save if token doesn't already exist in config
+    if [[ ! -f "$CONFIG_FILE" ]] || ! grep -q "^JINA_TOKEN=" "$CONFIG_FILE"; then
+        echo "JINA_TOKEN=\"$token\"" > "$CONFIG_FILE"
+        chmod 600 "$CONFIG_FILE"
+        echo -e "${GREEN}✓ Token saved to ${CONFIG_FILE}${NC}" >&2
+    fi
+}
+
+# Load saved token on startup
+load_saved_token
+
+# Default values (env vars take precedence over saved config)
+TOKEN="${JINA_TOKEN:-${SAVED_JINA_TOKEN:-}}"
 CONTEXT_TOKEN="${JINA_CONTEXT_TOKEN:-}"
 URL_OR_QUERY=""
 RAW_MODE=false
+TOKEN_PROVIDED_VIA_FLAG=false
 
 # URL encode function (without external tools)
 urlencode() {
@@ -44,6 +80,7 @@ while [[ $# -gt 0 ]]; do
     case "$1" in
         --token)
             TOKEN="$2"
+            TOKEN_PROVIDED_VIA_FLAG=true
             shift 2
             ;;
         --context)
@@ -90,6 +127,11 @@ done
 if [[ -z "$URL_OR_QUERY" ]]; then
     echo -e "${RED}Error: No URL or search query provided.${NC}" >&2
     exit 1
+fi
+
+# Save token if provided via --token flag and not already saved
+if [[ "$TOKEN_PROVIDED_VIA_FLAG" == true ]] && [[ -n "$TOKEN" ]]; then
+    save_token "$TOKEN"
 fi
 
 # Build Jina API URL

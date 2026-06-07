@@ -3,10 +3,27 @@ setlocal enabledelayedexpansion
 
 REM Terminal Browser for Windows CMD
 
+REM Cross-platform config directory
+if not "%APPDATA%"=="" (
+    set "CONFIG_DIR=%APPDATA%\tb"
+) else (
+    set "CONFIG_DIR=%USERPROFILE%\.config\tb"
+)
+set "CONFIG_FILE=%CONFIG_DIR%\config"
+
+REM Load saved token from config file
+if exist "%CONFIG_FILE%" (
+    for /f "tokens=1,* delims==" %%a in ('type "%CONFIG_FILE%"') do (
+        if "%%a"=="JINA_TOKEN" set "SAVED_JINA_TOKEN=%%b"
+    )
+)
+
 set "TOKEN=%JINA_TOKEN%"
+if "%TOKEN%"=="" if not "%SAVED_JINA_TOKEN%"=="" set "TOKEN=%SAVED_JINA_TOKEN%"
 set "CONTEXT=%JINA_CONTEXT_TOKEN%"
 set "URL_OR_QUERY="
 set "RAW_MODE=0"
+set "TOKEN_PROVIDED_VIA_FLAG=0"
 
 :parse_args
 if "%~1"=="" goto :check_query
@@ -19,6 +36,7 @@ if "%~1"=="--raw" (
 )
 if "%~1"=="--token" (
     set "TOKEN=%~2"
+    set "TOKEN_PROVIDED_VIA_FLAG=1"
     shift
     shift
     goto :parse_args
@@ -37,6 +55,22 @@ goto :parse_args
 if "%URL_OR_QUERY%"=="" (
     echo [Error] No URL or search query provided.
     exit /b 1
+)
+
+REM Save token if provided via --token flag and not already saved
+if "%TOKEN_PROVIDED_VIA_FLAG%"=="1" if not "%TOKEN%"=="" (
+    if not exist "%CONFIG_DIR%" mkdir "%CONFIG_DIR%"
+    if not exist "%CONFIG_FILE%" (
+        echo JINA_TOKEN=%TOKEN% > "%CONFIG_FILE%"
+        echo [Info] Token saved to %CONFIG_FILE%
+    ) else (
+        REM Check if token already exists
+        findstr /b "JINA_TOKEN=" "%CONFIG_FILE%" >nul
+        if errorlevel 1 (
+            echo JINA_TOKEN=%TOKEN% > "%CONFIG_FILE%"
+            echo [Info] Token saved to %CONFIG_FILE%
+        )
+    )
 )
 
 REM Determine mode and escape spaces for URL
